@@ -1,5 +1,9 @@
 # deepseek-peak-guard — DeepSeek 峰谷计费守卫
 
+[![CI](https://github.com/msyrain/dsh-peak-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/msyrain/dsh-peak-guard/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%5E22.19.0%20%7C%7C%20%3E%3D24.0.0-brightgreen.svg)](package.json)
+
 一个 DSH（DeepSeek Harness）插件：在 DSH 调用 DeepSeek 模型之前判断当前处于**高峰时段**还是**空闲时段**，并在高峰时段**弹窗询问是否确认调用**；同时在 Web GUI **左侧边栏「设置」上方**提供一个显示插件名称与**启用/禁用开关**的条目。
 
 > **关于三个名字。** npm 包名与客户端模块注册 id 都是 `dsh-peak-guard` —— 因为 DSH 客户端插件的清单名**就是**它在浏览器模块表里的键，浏览器按这个 id 取 bundle，所以它不能随意改。仓库名与本页标题用项目名 `deepseek-peak-guard`。侧边栏那一行显示中文标签 `峰谷计费守卫`。三者指同一个插件，其中只有包名是**有承重作用**的。
@@ -244,6 +248,17 @@ npm run sync:check                # 只报漂移，不写入
 - `tests/gate.test.js` — 用假 Cordis 上下文驱动真实的 `llm/stream` 监听器：放行路径、审批通道、问答通道（含两种历史返回结构）、拒绝时的终止块、无通道降级、子智能体、决策记忆、信号取消、卸载排空、配置报错。
 - `tests/switch.test.js` — 开关的持久化与容错、`/api/peak-guard/state` 的 GET/POST/405/400、关掉后守卫确实不介入。
 - `tests/client.test.js` — 按客户端模块契约真实执行 `lib/client.js`：注册 id、导出面、注册槽位、样式与布局锚点（含 `box-sizing` 防御规则）、构建标识是否已代入、宽/窄两种形态渲染、关闭态与不可达回退。
+
+### 持续集成
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) 在每次 push / PR 时跑两个作业：
+
+| 作业 | 回答的问题 | 失败意味着 |
+|---|---|---|
+| **Tests**（Node 22 与 24） | 插件行为是否还对？ | 有测试挂了。Node 22 用 `engines` 声明的最低版本，防止用了只有新 Node 才有的语法/API。 |
+| **build** | 已提交的浏览器产物是否最新？ | 有人改了 `src/client.js` 却忘了跑 `npm run build:client`。**这一项测试抓不到** —— 测试读的就是 `lib/client.js`，过期的话测试读到的是旧产物，照样全绿。 |
+
+`build` 作业里还有一步**防空洞检查**：故意改动 `src/client.js` 后，`build:client:check` 必须失败。否则这项检查万一哪天变成空操作，过期产物就会静默通过。
 
 ## 已知限制
 

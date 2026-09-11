@@ -1,0 +1,95 @@
+# Continuous integration for deepseek-peak-guard.
+#
+# Two jobs, because they answer different questions and fail for different
+# reasons:
+#
+#   test  — does the plugin still behave? Runs the offline suite, which needs no
+#           network, no DSH checkout, and no credentials.
+#   build — is the committed browser artifact current? The client bundle is
+#           generated from src/client.js and committed, so a source edit that
+#           forgets `npm run build:client` would ship a stale bundle while every
+#           test still passed (the tests read lib/client.js, which would simply
+#           be the old one). This job is what catches that.
+#
+# Node version: the job runs the version this project is developed and verified
+# on. package.json's `engines` field states the full supported range; testing
+# every point of a range in CI would buy little for a plugin whose only runtime
+# dependency is the DSH host it is mounted into.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A second push supersedes the first: cancel the in-flight run rather than
+# letting stale commits occupy runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # 24 is the development version; 22 is the oldest version `engines`
+        # accepts, so a syntax or API that only newer Node has fails here rather
+        # than in a user's editor.
+        node: ['22', '24']
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install (no dependencies; verifies the lockfile is consistent)
+        run: npm ci --ignore-scripts
+
+      - name: Run the offline test suite
+        run: npm test
+
+  build:
+    name: Committed client artifact is current
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install (no dependencies; verifies the lockfile is consistent)
+        run: npm ci --ignore-scripts
+
+      - name: Verify lib/client.js matches src/client.js
+        run: npm run build:client:check
+
+      - name: Confirm the check is not vacuous
+        # If build:client:check ever became a no-op, a stale artifact would pass
+        # silently. Touching the source must make the check fail.
+        run: |
+          set -euo pipefail
+          cp src/client.js "$RUNNER_TEMP/client.js.orig"
+          printf '\n// ci probe\n' >> src/client.js
+          if npm run build:client:check; then
+            echo "::error::build:client:check passed with a modified source; the check is not detecting staleness"
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/client.js.orig" src/client.js
+          echo "build:client:check correctly reports a stale artifact"

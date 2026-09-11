@@ -1,5 +1,9 @@
 # deepseek-peak-guard — DeepSeek peak/off-peak cost guard
 
+[![CI](https://github.com/msyrain/dsh-peak-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/msyrain/dsh-peak-guard/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%5E22.19.0%20%7C%7C%20%3E%3D24.0.0-brightgreen.svg)](package.json)
+
 A DSH (DeepSeek Harness) plugin that decides whether a DeepSeek model call is
 about to happen inside a **peak** or an **off-peak** billing window, and — in a
 peak window — **asks the user to confirm before the request is dispatched**. It
@@ -288,6 +292,20 @@ a stale artifact from a fresh one.
   module contract: the registration id, the exported surface, the slot it claims
   (the footer action above Settings), style injection, and rendering in both the
   wide and rail forms including the disabled and unreachable-host states.
+
+### Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs two jobs on every
+push and pull request:
+
+| Job | The question it answers | What a failure means |
+|---|---|---|
+| **Tests** (Node 22 and 24) | Does the plugin still behave? | A test regressed. Node 22 is the floor `engines` accepts, so a syntax or API that only newer Node has fails here instead of in a user's editor. |
+| **build** | Is the committed browser artifact current? | `src/client.js` changed without re-running `npm run build:client`. **The test suite cannot catch this** — it reads `lib/client.js`, so a stale artifact simply gets tested as the old one and stays green. |
+
+The `build` job also contains an anti-vacuity step: it modifies `src/client.js`
+and requires `build:client:check` to fail. Without that, the check could quietly
+become a no-op and stale artifacts would pass.
 
 ## Known limits
 
