@@ -13,6 +13,51 @@
 - 侧边栏开关：一键启用/禁用，状态持久化到磁盘，重启后保持。
 - 无构建步骤：宿主半部是纯 ESM JavaScript；浏览器半部由随附的约 150 行构建脚本生成，不依赖 monorepo 构建链。
 
+## 获取本项目
+
+三种方式任选，装到任意目录都可以（含空格或中文路径）。
+
+> 下面的命令在 **PowerShell 7（`pwsh`）与 Windows PowerShell 5.1（`powershell`）里都能直接粘贴运行**，
+> 没有依赖较新 PowerShell 才有的语法；`bash` 代码块在 Git Bash / WSL / macOS / Linux 下同样可用。
+
+**① 克隆（推荐，便于日后 `git pull` 更新）**
+
+```bash
+git clone https://github.com/msyrain/dsh-peak-guard.git
+cd dsh-peak-guard
+```
+
+**② 已配置 SSH key 时**
+
+```bash
+git clone git@github.com:msyrain/dsh-peak-guard.git
+```
+
+> 这条**需要你先在 GitHub 配好 SSH key**，否则会报 `Permission denied (publickey)`。
+> 没配过就用上面第 ① 种（HTTPS 克隆公开仓库不需要任何凭据）。
+
+**③ 不用 git：直接下载压缩包**
+
+浏览器打开 <https://github.com/msyrain/dsh-peak-guard> → 绿色 `Code` 按钮 → `Download ZIP`，解压后即得到完整项目。
+
+或命令行下载（解压后目录名形如 `dsh-peak-guard-main`）：
+
+```powershell
+curl.exe -L -o dsh-peak-guard.zip https://codeload.github.com/msyrain/dsh-peak-guard/zip/refs/heads/main
+Expand-Archive dsh-peak-guard.zip -DestinationPath .
+```
+
+> **ZIP 方式没有 `.git` 目录**，所以不能用 `git pull` 更新，也无法 `git diff` 查看改动；要升级需重新下载。
+> 运行文件一样完整：客户端产物 `lib/client.js` 已随仓库提供，**克隆或解压后无需构建即可直接安装使用**。
+
+**④ 已发布到 npm 后（按包名安装，无需克隆）**
+
+```powershell
+dsh plugin --profile web add dsh-peak-guard
+```
+
+> ⚠️ 当前尚未发布到 npm（包名可用但未发布），请先用上面三种方式。
+
 ## 峰谷规则（现行，官方口径）
 
 DeepSeek 现行定价页脚注（[Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing)，2026-09-10 核对）：
@@ -34,7 +79,7 @@ DeepSeek 现行定价页脚注（[Models & Pricing](https://api-docs.deepseek.co
 
 ## 安装
 
-先在任意位置克隆或解压本项目，然后在该目录里运行安装器（下面的 `<你的目录>` 换成实际路径，比如 `C:\tools\dsh-peak-guard`）：
+先按上一节把项目拿到本地任意目录（下面的 `<你的目录>` 换成实际路径，比如 `C:\tools\dsh-peak-guard`），然后在该目录里运行安装器：
 
 ```powershell
 cd <你的目录>

@@ -30,6 +30,58 @@ plugin name and an enable/disable switch.
 
 中文文档见 [`README.zh.md`](README.zh.md)。
 
+## Getting the project
+
+Three ways to get it; it works from any directory, including one with spaces or
+non-ASCII characters.
+
+> The commands below paste into **both PowerShell 7 (`pwsh`) and Windows
+> PowerShell 5.1 (`powershell`)** — they avoid syntax only newer PowerShell has
+> — and the `bash` blocks work in Git Bash, WSL, macOS, and Linux.
+
+**① Clone (recommended — `git pull` keeps it updatable)**
+
+```bash
+git clone https://github.com/msyrain/dsh-peak-guard.git
+cd dsh-peak-guard
+```
+
+**② With an SSH key already configured**
+
+```bash
+git clone git@github.com:msyrain/dsh-peak-guard.git
+```
+
+> This one **requires an SSH key registered with GitHub**; without it the clone
+> fails with `Permission denied (publickey)`. If you have not set one up, use
+> option ① — cloning a public repository over HTTPS needs no credentials.
+
+**③ No git: download an archive**
+
+On <https://github.com/msyrain/dsh-peak-guard>, use the green `Code` button →
+`Download ZIP`, then unpack it.
+
+Or from a shell (the extracted directory is named like `dsh-peak-guard-main`):
+
+```powershell
+curl.exe -L -o dsh-peak-guard.zip https://codeload.github.com/msyrain/dsh-peak-guard/zip/refs/heads/main
+Expand-Archive dsh-peak-guard.zip -DestinationPath .
+```
+
+> An archive has **no `.git` directory**, so `git pull` and `git diff` are
+> unavailable there and updating means downloading again. The runnable files are
+> just as complete: the browser artifact `lib/client.js` is committed, so
+> **a clone or an unzipped copy installs with no build step**.
+
+**④ Once published to npm (install by name, no clone)**
+
+```powershell
+dsh plugin --profile web add dsh-peak-guard
+```
+
+> ⚠️ Not published to npm yet (the name is free but unused); use one of the three
+> methods above for now.
+
 ## The peak/off-peak rule (current, official)
 
 From the footnote on the pricing page
@@ -55,9 +107,10 @@ classifies by **request start time** and says so in every prompt it renders.
 
 ## Install
 
-Clone or unpack the project anywhere, then run the installer from that directory
-(replace `<your-path>` with the real location, for example
-`C:\tools\dsh-peak-guard`):
+Get the project onto disk first (see
+[Getting the project](#getting-the-project)), then run the installer from that
+directory — replace `<your-path>` with the real location, for example
+`C:\tools\dsh-peak-guard`:
 
 ```powershell
 cd <your-path>
