@@ -241,10 +241,16 @@ test('apply injects its stylesheet exactly once', () => {
   assert.equal(tag.dataset.pluginCss, `${PACKAGE_NAME}/sidebar.css`)
   assert.match(tag.textContent, /\.peak-guard-row/)
   assert.match(tag.textContent, /width:100%/, 'the row claims a full line')
+  // Without border-box the full-line width EXCLUDES the padding, so the row
+  // overflows its container and clips both edges — the exact bug this guards.
+  assert.match(tag.textContent, /box-sizing:border-box/)
   // The layout anchor: the footer seat must wrap for a full-width row to stack
   // instead of being forced beside the shipped updater row.
   assert.match(tag.textContent, /\[class\*="footerActions"\]/)
   assert.match(tag.textContent, /flex-wrap:wrap/)
+  // Defence in depth: the container re-asserts border-box on this row, so a
+  // lost row-level rule still cannot clip it.
+  assert.match(tag.textContent, /\[class\*="footerActions"\] > \.peak-guard-row\{box-sizing:border-box/)
   assert.equal(effectCleanups.length, 1, 'the style tag has a disposer')
 })
 
@@ -253,10 +259,27 @@ test('the row renders the name, the switch, and the live standing', async () => 
   assert.match(html, /峰谷计费守卫/, 'the plugin name is shown')
   assert.match(html, /peak-guard-track/, 'the switch is rendered')
   assert.match(html, /data-on="true"/, 'the switch reflects the host snapshot')
-  assert.match(html, /10:24 高峰价/, 'the status line shows the host clock and phase')
-  assert.match(html, /09:00-12:00/, 'the status line lists the peak windows')
+  assert.match(
+    html,
+    /10:24 高峰价 · 09:00-12:00、14:00-18:00/,
+    'the clock, phase, and windows render together',
+  )
   assert.equal(table.fetches.length >= 1, true)
   assert.equal(table.fetches[0].url, '/api/peak-guard/state')
+})
+
+test('the build stamp identifies the artifact and reaches the DOM', async () => {
+  const source = readFileSync(ARTIFACT, 'utf8')
+  assert.doesNotMatch(source, /__BUILD_STAMP__/, 'the build must replace the stamp placeholder')
+  const stamped = /const BUILD_STAMP = '([^']+)'/.exec(source)
+  assert.ok(stamped, 'the artifact carries a literal build stamp')
+  // Content-derived, not a timestamp: a timestamp would change on every build
+  // and make "is this artifact current?" unanswerable.
+  assert.match(stamped[1], /^[0-9a-f]{12}$/)
+
+  const { html } = await renderRow(moduleTable(), { wide: true, t: (key) => key })
+  assert.match(html, new RegExp(`data-build="${stamped[1]}"`), 'the row exposes the stamp')
+  assert.match(source, /console\.info\('\[dsh-peak-guard\] client build '/, 'and logs it once')
 })
 
 test('the rail form renders a dot instead of the full row', async () => {

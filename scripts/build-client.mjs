@@ -23,8 +23,9 @@
  * - the source names the id placeholder exactly once.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -145,9 +146,48 @@ const id = packageName()
 const source = readFileSync(SOURCE, 'utf8').replaceAll('\r\n', '\n')
 validate(source, id)
 mkdirSync(dirname(OUTPUT), { recursive: true })
-// The stamp is the build instant: it makes "which revision is this page
-// running?" answerable from the DOM or the console, instead of inferring a
-// stale bundle from a rendering symptom.
-const stamp = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
-writeFileSync(OUTPUT, wrap(id, source.replace(PLACEHOLDER, id).replace(STAMP_PLACEHOLDER, stamp)))
-process.stdout.write(`build-client: wrote ${OUTPUT} for ${id} (build ${stamp})\n`)
+
+/**
+ * Derive the build stamp from everything that shapes the artifact.
+ *
+ * Deliberately NOT a timestamp. A timestamp changes on every run, so a
+ * committed artifact would always look modified after a rebuild (noisy diffs)
+ * and no check could tell a stale artifact from a fresh one. A content digest
+ * is stable when the inputs are, which is what lets `--check` mean something —
+ * and it still answers "which revision is this page running?" from the DOM or
+ * the console, which is what the stamp exists for.
+ *
+ * @param {string} sourceText - the validated browser source.
+ * @returns {string} a short digest over the source and this build script.
+ */
+function contentStamp(sourceText) {
+  const digest = createHash('sha256')
+  digest.update('dsh-peak-guard/client\0')
+  digest.update(sourceText)
+  digest.update('\0')
+  // The build script is an input too: changing the wrapper changes the artifact.
+  digest.update(readFileSync(fileURLToPath(import.meta.url)))
+  return digest.digest('hex').slice(0, 12)
+}
+
+const stamp = contentStamp(source)
+const artifact = wrap(id, source.replace(PLACEHOLDER, id).replace(STAMP_PLACEHOLDER, stamp))
+
+// `--check` is CI's question: "is the committed artifact current?" A
+// content-derived stamp is what makes that answerable, since a timestamp would
+// differ on every run no matter how stale the artifact was.
+if (process.argv.includes('--check')) {
+  const current = existsSync(OUTPUT) ? readFileSync(OUTPUT, 'utf8') : undefined
+  if (current === artifact) {
+    process.stdout.write(`build-client: ${basename(OUTPUT)} is up to date (stamp ${stamp})\n`)
+  } else {
+    process.stderr.write(
+      `build-client: ${basename(OUTPUT)} is STALE (expected stamp ${stamp});`
+      + ' run `npm run build:client` and commit the result\n',
+    )
+    process.exitCode = 1
+  }
+} else {
+  writeFileSync(OUTPUT, artifact)
+  process.stdout.write(`build-client: wrote ${basename(OUTPUT)} for ${id} (stamp ${stamp})\n`)
+}

@@ -56,6 +56,7 @@
   },
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
+    "build:client:check": "node scripts/build-client.mjs --check",
     "install:plugin": "node install.mjs",
     "sync": "node sync.mjs",
     "sync:check": "node sync.mjs --check",

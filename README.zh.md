@@ -229,11 +229,14 @@ config:
 ```powershell
 npm test                          # 等价于 node --test "tests/*.test.js"
 npm run build:client              # 改过 src/client.js 后重新生成 lib/client.js
+npm run build:client:check        # 校验已提交的产物是否最新（CI 用，过期时退出码 1）
 npm run sync                      # 副本安装模式：把改动同步进安装目录
 npm run sync:check                # 只报漂移，不写入
 ```
 
-共 69 项，全部离线、确定性：
+产物是**确定性**的：构建戳由 `src/client.js` 与构建脚本的内容哈希派生，而非时间戳。同样的输入总是产出同样的字节，这也是 `build:client:check` 能成立的前提（时间戳方案下每次重建都有差异，就无法判断产物是否过期）。
+
+共 72 项，全部离线、确定性：
 
 - `tests/peak.test.js` — 时区换算、窗口边界（含跨午夜与周末）、glob 匹配、价格选择、决策分支、配置校验。
 - `tests/gate.test.js` — 用假 Cordis 上下文驱动真实的 `llm/stream` 监听器：放行路径、审批通道、问答通道（含两种历史返回结构）、拒绝时的终止块、无通道降级、子智能体、决策记忆、信号取消、卸载排空、配置报错。
