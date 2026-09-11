@@ -1,0 +1,23 @@
+# The sidebar switch's runtime state. It records the user's own on/off choice,
+# so it belongs to a deployment, never to the repository — and a committed copy
+# would silently disable the guard (and, worse, disable it inside the test suite,
+# which asserts the ENABLED behaviour).
+.peak-guard-state.json
+.peak-guard-state.json.boot.json
+
+# Diagnostics and scratch left behind while developing the plugin.
+.probe*
+.pg-probe*
+*.tmp
+
+# The plugin-authoring research notes. They were gathered while building this
+# plugin and quote this machine's absolute paths (the harness home, credential
+# and profile locations), so they stay local. The conclusions that matter to a
+# user are already folded into README.md / README.zh.md.
+DSH-PLUGIN-AUTHORING-REPORT.md
+
+# Editor and OS noise.
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

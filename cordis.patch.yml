@@ -1,0 +1,21 @@
+# The dsh-peak-guard bundle layer.
+#
+# `dsh plugin --profile <name> add <this package>` records this package in the
+# profile's `dsh.profile.bundles` list, which is what makes the Loader read this
+# file and insert the row below.
+#
+# The row is addressed by package name rather than by a relative source path, so
+# Node's module resolution finds the installed copy. Inserted at the end of the
+# bundle stack, the row is active for every profile that installs this bundle.
+#
+# To disable the guard without uninstalling it, override the row in your own
+# `$DSH_HOME/profiles/<name>/cordis.patch.yml`:
+#
+#   - id: peak-guard
+#     name: 'dsh-peak-guard'
+#     config:
+#       enabled: false
+
+- insert:
+    - id: peak-guard
+      name: dsh-peak-guard
