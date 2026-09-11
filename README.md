@@ -1,10 +1,17 @@
-# dsh-peak-guard — DeepSeek peak/off-peak cost guard
+# deepseek-peak-guard — DeepSeek peak/off-peak cost guard
 
 A DSH (DeepSeek Harness) plugin that decides whether a DeepSeek model call is
 about to happen inside a **peak** or an **off-peak** billing window, and — in a
 peak window — **asks the user to confirm before the request is dispatched**. It
 also adds a row **above Settings in the Web GUI's left sidebar** carrying the
 plugin name and an enable/disable switch.
+
+> **On the two names.** The npm package and the client-module registration id are
+> `dsh-peak-guard`, because a DSH client plugin's manifest name IS its
+> module-table key — the browser resolves the bundle by that id. The repository
+> and this page use the project name `deepseek-peak-guard`. The sidebar row shows
+> the Chinese label `峰谷计费守卫`. All three refer to this one plugin; only the
+> package id is load-bearing.
 
 - **Interception point:** the `llm/stream` waterfall on `ctx.llm`, which covers
   *every* model call: the main conversation loop, subagents, compaction

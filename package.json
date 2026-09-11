@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/dsh-peak-guard.git"
+    "url": "git+https://github.com/msyrain/dsh-peak-guard.git"
   },
   "keywords": [
     "dsh",
