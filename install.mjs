@@ -30,17 +30,17 @@
  * the Chinese labels this plugin's config carries.
  */
 
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { packageFiles } from './scripts/package-files.mjs'
 
 const SOURCE_DIR = dirname(fileURLToPath(import.meta.url))
 const BEGIN_MARKER = '# >>> dsh-peak-guard (managed by install.mjs) >>>'
 const END_MARKER = '# <<< dsh-peak-guard <<<'
 const INSTALL_DIR_NAME = 'dsh-peak-guard'
-const RUNTIME_FILES = ['index.js', 'package.json', 'cordis.patch.yml', 'README.md', 'README.zh.md']
-const RUNTIME_DIRS = ['src', 'lib']
 
 /** Parse the small flag surface this script needs. */
 function parseArgs(argv) {
@@ -139,34 +139,21 @@ function isLink(path) {
   }
 }
 
-/** Copy the runtime files into the profile. */
+/**
+ * Copy the package's files into the profile.
+ *
+ * The list comes from `package.json`'s `files` field rather than a second,
+ * hand-maintained array: a copy has to contain the same files the package
+ * publishes, and two lists are exactly how a copy install previously ended up
+ * missing six of them.
+ */
 function copyRuntime(target) {
   mkdirSync(target, { recursive: true })
-  for (const name of RUNTIME_FILES) {
-    const from = join(SOURCE_DIR, name)
-    if (existsSync(from)) writeFileSync(join(target, name), readFileSync(from))
+  for (const relative of packageFiles(SOURCE_DIR)) {
+    const destination = join(target, relative)
+    mkdirSync(dirname(destination), { recursive: true })
+    writeFileSync(destination, readFileSync(join(SOURCE_DIR, relative)))
   }
-  for (const name of RUNTIME_DIRS) {
-    const from = join(SOURCE_DIR, name)
-    if (!existsSync(from)) continue
-    mkdirSync(join(target, name), { recursive: true })
-    for (const file of readdirRecursive(from)) {
-      const destination = join(target, name, file)
-      mkdirSync(dirname(destination), { recursive: true })
-      writeFileSync(destination, readFileSync(join(from, file)))
-    }
-  }
-}
-
-/** List files under a directory, as paths relative to it. */
-function readdirRecursive(root, prefix = '') {
-  const out = []
-  for (const entry of readdirSync(join(root, prefix))) {
-    const relative = prefix === '' ? entry : join(prefix, entry)
-    if (statSync(join(root, relative)).isDirectory()) out.push(...readdirRecursive(root, relative))
-    else out.push(relative)
-  }
-  return out
 }
 
 /** Remove the installed directory, whether it is a link or a real directory. */

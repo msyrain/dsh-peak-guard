@@ -23,16 +23,15 @@
  */
 
 import { createHash } from 'node:crypto'
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs'
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { packageFiles } from './scripts/package-files.mjs'
+
 const SOURCE_DIR = dirname(fileURLToPath(import.meta.url))
 const INSTALL_DIR_NAME = 'dsh-peak-guard'
-/** Files the installed plugin needs at runtime, plus its own docs and tooling. */
-const RUNTIME_FILES = ['index.js', 'package.json', 'cordis.patch.yml', 'README.md', 'README.zh.md']
-const RUNTIME_DIRS = ['src', 'lib', 'scripts']
 
 /** Parse the flag surface. */
 function parseArgs(argv) {
@@ -50,25 +49,6 @@ function parseArgs(argv) {
     else throw new Error(`unknown argument: ${arg}`)
   }
   return options
-}
-
-/**
- * List every runtime file as a path relative to the package root.
- * @returns {string[]} relative paths, files only.
- */
-function runtimeFiles() {
-  const out = [...RUNTIME_FILES]
-  const walk = (relative) => {
-    const absolute = join(SOURCE_DIR, relative)
-    if (!existsSync(absolute)) return
-    for (const entry of readdirSync(absolute)) {
-      const child = join(relative, entry)
-      if (statSync(join(SOURCE_DIR, child)).isDirectory()) walk(child)
-      else out.push(child)
-    }
-  }
-  for (const dir of RUNTIME_DIRS) walk(dir)
-  return out
 }
 
 /** Hash a file's bytes, or undefined when it does not exist. */
@@ -117,7 +97,9 @@ function main() {
     return sameCheckout ? undefined : (process.exitCode = 1, undefined)
   }
 
-  const files = runtimeFiles()
+  // The comparison set is the package's published file list, so "up to date"
+  // means the installed copy matches what a fresh install would produce.
+  const files = packageFiles(SOURCE_DIR)
   const drifted = []
   const missing = []
   for (const relative of files) {

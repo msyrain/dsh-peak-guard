@@ -20,6 +20,7 @@
     "src/config.js",
     "src/client.js",
     "scripts/build-client.mjs",
+    "scripts/package-files.mjs",
     "cordis.patch.yml",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
