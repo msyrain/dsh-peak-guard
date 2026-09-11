@@ -325,6 +325,16 @@ become a no-op and stale artifacts would pass.
   is off in the shipped composition. Browser-half changes additionally need a
   page refresh, because the client bundle is part of the boot manifest.
 
+## Contributing
+
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before changing anything — it lists four
+non-obvious hard constraints, the sharpest being that a change to
+`src/client.js` must be rebuilt into `lib/client.js` and committed, and that
+**the test suite cannot catch a forgotten rebuild** (it tests whatever artifact
+is on disk). CI has a job dedicated to that gap.
+
+Release history lives in [`CHANGELOG.md`](CHANGELOG.md).
+
 ## License
 
 MIT.

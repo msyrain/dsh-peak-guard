@@ -284,3 +284,12 @@ npm run sync:check                # 只报漂移，不写入
 | `install.mjs` | 安装/卸载到 profile（junction 或复制）。 |
 | `sync.mjs` | 副本安装模式下，把工作区的运行文件同步到安装目录；`--check` 只报漂移。 |
 | `tests/*.test.js` | 离线测试。 |
+| `.github/workflows/ci.yml` | CI：跑测试 + 校验产物是否最新。 |
+
+## 参与贡献
+
+改动前请读 [`CONTRIBUTING.md`](CONTRIBUTING.md) —— 里面有**四条不直观但踩了会很困惑**的硬约束，
+其中最要紧的一条是：改了 `src/client.js` 必须重建 `lib/client.js` 并提交，
+而**测试抓不到这个遗漏**（测试读的就是那个产物）。CI 里有一步专门拦它。
+
+版本变更记录见 [`CHANGELOG.md`](CHANGELOG.md)。

@@ -1,8 +1,7 @@
 {
   "name": "dsh-peak-guard",
   "version": "0.2.0",
-  "private": true,
-  "description": "DeepSeek peak/off-peak (峰谷) cost guard: confirms model calls dispatched inside DeepSeek's peak windows, with a sidebar enable/disable switch",
+  "description": "DeepSeek peak/off-peak (峰谷) cost guard for DSH: confirms model calls dispatched inside DeepSeek's peak windows, with a sidebar enable/disable switch",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -22,22 +21,34 @@
     "src/client.js",
     "scripts/build-client.mjs",
     "cordis.patch.yml",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
     "README.zh.md"
   ],
   "license": "MIT",
+  "author": "msyrain (https://github.com/msyrain)",
+  "homepage": "https://github.com/msyrain/dsh-peak-guard#readme",
+  "bugs": {
+    "url": "https://github.com/msyrain/dsh-peak-guard/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/msyrain/dsh-peak-guard.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "dsh",
     "deepseek-harness",
-    "plugin",
+    "dsh-plugin",
     "deepseek",
     "cost-guard",
-    "off-peak"
+    "off-peak",
+    "peak",
+    "pricing"
   ],
   "dsh": {
     "bundle": {
@@ -61,6 +72,7 @@
     "sync": "node sync.mjs",
     "sync:check": "node sync.mjs --check",
     "uninstall:plugin": "node install.mjs --uninstall",
-    "test": "node --test \"tests/*.test.js\""
+    "test": "node --test \"tests/*.test.js\"",
+    "prepublishOnly": "npm test && npm run build:client:check"
   }
 }

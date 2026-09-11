@@ -1,0 +1,67 @@
+name: Feature request / 功能建议
+description: 提出新能力或行为调整。Suggest a capability or a behaviour change.
+title: '[feat] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先说明**问题**，再说**方案**——这样我们才能判断是否有更合适的做法。
+        Describe the problem before the proposal, so a better approach can surface.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 提交前确认 / Preflight
+      options:
+        - label: 我已搜索过现有 issue，没有重复。/ I searched existing issues.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题 / The problem
+      description: |
+        例：空闲时段跨天时我不确定它算哪一天的价格。
+      placeholder: 描述你在使用中遇到的困难，而不是先给出实现方案。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你希望的方案 / Proposed solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 你考虑过的替代方案 / Alternatives considered
+      description: 包括「不改代码也能绕过」的办法。
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 影响范围 / Area
+      multiple: true
+      options:
+        - 峰谷判定逻辑 / classification
+        - 确认弹窗与询问时机 / confirmation flow
+        - 侧边栏开关与界面 / sidebar UI
+        - 价格表与展示 / pricing display
+        - 安装与配置 / install & config
+        - 文档 / documentation
+        - 其他 / other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: breaking
+    attributes:
+      label: 兼容性 / Compatibility
+      options:
+        - label: 这个改动会改变现有配置的含义，或需要用户重新安装 / 这会是一个破坏性变更。
+          required: false

@@ -1,0 +1,13 @@
+# Issue 模板选择页 / Issue template chooser.
+#
+# `blank_issues_enabled: false` keeps reports in a form we can act on: the bug
+# form asks for the four facts (version, DSH version, install mode, peak
+# standing) that decide whether a report is reproducible.
+blank_issues_enabled: false
+contact_links:
+  - name: 先读文档 / Read the docs first
+    url: https://github.com/msyrain/dsh-peak-guard#readme
+    about: 安装、配置、已知限制都在 README 里；安装类问题多半是「副本模式未同步」。
+  - name: 峰谷规则与官方定价 / The peak rules and official pricing
+    url: https://api-docs.deepseek.com/quick_start/pricing
+    about: 时段窗口与折扣以 DeepSeek 官方页面为准，本插件只是按它判定。

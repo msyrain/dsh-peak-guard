@@ -1,0 +1,143 @@
+name: Bug report / 问题反馈
+description: 行为与预期不符，或插件报错。Something behaves differently than expected.
+title: '[bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量填完整——尤其是**版本、DSH 版本**和**当时的峰谷状态**，
+        这三项决定了问题能不能复现。
+
+        Thanks for the report. Version, DSH version, and the peak/off-peak
+        standing at the time are what make this reproducible; please include them.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 提交前确认 / Preflight
+      options:
+        - label: 我已搜索过现有 issue，没有重复。/ I searched existing issues.
+          required: true
+        - label: 我已阅读 README 的「已知限制」一节。/ I read the Known limits section.
+          required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: 插件版本 / Plugin version
+      description: '`package.json` 里的 version，或 npm 上的版本。'
+      placeholder: '0.2.0'
+    validations:
+      required: true
+
+  - type: input
+    id: build-stamp
+    attributes:
+      label: 浏览器半部构建戳 / Client build stamp
+      description: |
+        控制台里 `[dsh-peak-guard] client build <stamp>` 的输出，或行元素上的
+        `data-build` 属性。**如果你怀疑界面没更新，这一项是关键证据。**
+      placeholder: 'ed14f1e05f24'
+    validations:
+      required: false
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本 / DSH version
+      description: '`dsh --version`，或你运行 DSH 的方式（源码 `pnpm dsh web` / npm 安装）。'
+      placeholder: '0.1.5-alpha.2，源码运行 pnpm dsh web'
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node 版本 / Node version
+      placeholder: 'v24.15.0'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-mode
+    attributes:
+      label: 安装方式 / Install mode
+      description: |
+        这一点直接影响排错方向：**副本模式不会跟随工作区改动**，
+        是「改了却没生效」类问题的头号原因。
+      options:
+        - 联接（install.mjs 默认）/ junction
+        - 副本（install.mjs --copy）/ copy
+        - npm install dsh-peak-guard
+        - 其他 / other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: standing
+    attributes:
+      label: 出问题时的峰谷状态 / Peak standing at the time
+      description: 见侧边栏那一行的状态文字，或控制台里的判定日志。
+      options:
+        - 高峰时段（标准价）/ peak
+        - 空闲时段（5 折）/ off-peak
+        - 不确定 / unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 实际行为 / What happened
+      description: 越具体越好。有报错就贴原文。Include exact errors.
+      placeholder: |
+        例：高峰时段我点了「稍后重试」，但本轮还是继续调用了模型。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为 / What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: 插件配置 / Plugin config
+      description: |
+        profile `cordis.patch.yml` 里 `peak-guard` 那一行的 `config`（**请删除密钥**）。
+        The `config` block of the `peak-guard` row (**redact secrets**).
+      render: yaml
+      placeholder: |
+        - id: peak-guard
+          name: './dsh-peak-guard/index.js'
+          config:
+            timeZone: 'Asia/Shanghai'
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志 / Relevant logs
+      description: |
+        服务端控制台里带 `dsh-peak-guard:` 前缀的行；浏览器控制台里带
+        `[dsh-peak-guard]` 前缀的行。若涉及「读不到状态」，
+        请附上 `<statePath>.boot.json` 的内容。
+      render: text
+    validations:
+      required: false
