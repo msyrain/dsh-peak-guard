@@ -34,16 +34,20 @@ DeepSeek 现行定价页脚注（[Models & Pricing](https://api-docs.deepseek.co
 
 ## 安装
 
-插件在**用户 ESM 解析路径之外**时无法解析 `@deepseek-ai/*` 依赖，因此安装方式是把插件放进 profile 目录（用目录联接/junction 指向本仓库，或直接复制）：
+先在任意位置克隆或解压本项目，然后在该目录里运行安装器（下面的 `<你的目录>` 换成实际路径，比如 `C:\tools\dsh-peak-guard`）：
 
 ```powershell
-cd F:\DSH峰谷插件
+cd <你的目录>
 
 node install.mjs                 # 开发模式：在 web profile 里建 junction 指向本目录
-node install.mjs --copy          # 交付模式：把运行文件复制进 profile
+node install.mjs --copy          # 交付模式：把包内文件复制进 profile
 node install.mjs --uninstall     # 卸载（移除 patch 行与安装目录）
-node install.mjs --profile web --dsh-home D:\other-dsh
+node install.mjs --profile sdk --dsh-home D:\other-dsh
 ```
+
+> **目录可以任意**，放在哪里都行，含空格或中文（如 `C:\我的工具\峰谷插件`）也没问题：
+> 安装器用的是脚本自身所在目录而非当前工作目录，因此你**从任何地方调用它都可以**
+> （实测过从 `C:\Windows` 调用仍然正确）。唯一的已知坑见下方关于非 ASCII 路径的说明。
 
 安装器只改 profile 自己的 `cordis.patch.yml`，且只动它自己那一段标记块，不会碰你已有的其他 patch：
 
@@ -58,7 +62,8 @@ node install.mjs --profile web --dsh-home D:\other-dsh
 配套的 `cordis.patch.yml`（本包根目录）声明了 `dsh.bundle`，所以也可以用 DSH 官方方式把整个包作为**组合包**安装：
 
 ```powershell
-dsh plugin --profile web add F:\DSH峰谷插件
+dsh plugin --profile web add <你的目录>
+dsh plugin --profile web add dsh-peak-guard      # 已发布到 npm 后，也可以直接按包名装
 ```
 
 两种方式的取舍：`dsh plugin add` 是标准分发路径，但会由 pnpm 安装并在**下次启动**才加入层栈；`node install.mjs` 的 junction 方式对开发最省事，且 `web` profile 的 `patchReload: live` 会让 patch 行**免重启**生效。
@@ -86,7 +91,7 @@ node sync.mjs --check  # 只报漂移、不写入；有漂移时退出码为 1
 
 > ⚠️ **浏览器半部需要刷新页面**：宿主半部（含侧边栏开关的 API 路由）随 patch 热加载立即生效；而 `lib/client.js` 是被写入页面启动清单（`window.__DSH_BOOT__`）的，所以新增/修改浏览器半部后需要**重启 dsh 服务并刷新页面**。修改 `src/client.js` 后记得先跑 `npm run build:client`（`node scripts/build-client.mjs`）。
 
-> ⚠️ 安装目录路径中若含非 ASCII 字符（如 `F:\DSH峰谷插件`），请**只用 `install.mjs` 建联接**。Windows PowerShell 5.1 创建 junction 时会把中文路径按 ANSI 码页转写，得到一个乱码的目标路径（功能上仍可解析，但显示与排错都很糟糕）。
+> ⚠️ 安装目录路径中若含**非 ASCII 字符**（例如 `C:\我的工具\峰谷插件`），请**只用 `install.mjs` 建联接**。Windows PowerShell 5.1 创建 junction 时会把路径按 ANSI 码页转写，得到一个乱码的目标路径（功能上仍可解析，但显示与排错都很糟糕）。`install.mjs` 用 Node 的 API 建联接，不存在这个问题 —— 实测过含中文的路径。
 
 ### 验证
 

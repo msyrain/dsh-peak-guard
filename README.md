@@ -55,17 +55,24 @@ classifies by **request start time** and says so in every prompt it renders.
 
 ## Install
 
-A plugin module resolves `@deepseek-ai/*` from *its own* directory, so the
-plugin is installed into the profile (linked to this checkout, or copied):
+Clone or unpack the project anywhere, then run the installer from that directory
+(replace `<your-path>` with the real location, for example
+`C:\tools\dsh-peak-guard`):
 
 ```powershell
-cd F:\DSH峰谷插件
+cd <your-path>
 
 node install.mjs                 # link this checkout into the `web` profile
-node install.mjs --copy          # copy the runtime files instead
+node install.mjs --copy          # copy the package's files instead
 node install.mjs --uninstall     # remove the row and the installed directory
-node install.mjs --profile web --dsh-home D:\other-dsh
+node install.mjs --profile sdk --dsh-home D:\other-dsh
 ```
+
+> **The directory may be anywhere** — spaces and non-ASCII characters
+> (`C:\我的工具\峰谷插件`) are fine. The installer locates itself rather than
+> relying on the working directory, so calling it from anywhere works; that was
+> verified by invoking it from `C:\Windows`. The one known caveat about
+> non-ASCII paths is noted further down.
 
 The installer edits only the profile's own `cordis.patch.yml`, and only inside
 its own marker block, so unrelated user patches survive:
@@ -82,7 +89,8 @@ Because the bundled `cordis.patch.yml` declares `dsh.bundle`, the package can
 also be installed the standard way as a profile bundle:
 
 ```powershell
-dsh plugin --profile web add F:\DSH峰谷插件
+dsh plugin --profile web add <your-path>
+dsh plugin --profile web add dsh-peak-guard   # by name, once published to npm
 ```
 
 Trade-off: `dsh plugin add` is the distribution path, but pnpm installs it and
@@ -127,10 +135,11 @@ show `- id: peak-guard` under the profile patch layer.
 > `src/client.js`.
 
 > ⚠️ If the install path contains non-ASCII characters (for example
-> `F:\DSH峰谷插件`), create the junction **only with `install.mjs`**. Windows
-> PowerShell 5.1 transcribes a junction target through the console code page,
-> which yields a mojibake target path — still resolvable, but miserable to read
-> and to debug.
+> `C:\我的工具\峰谷插件`), create the junction **only with `install.mjs`**.
+> Windows PowerShell 5.1 transcribes a junction target through the console code
+> page, which yields a mojibake target path — still resolvable, but miserable to
+> read and to debug. `install.mjs` creates the junction through Node's API and
+> does not have this problem; a path containing Chinese characters was verified.
 
 ## How it decides
 
