@@ -21,6 +21,7 @@
     "src/client.js",
     "scripts/build-client.mjs",
     "scripts/package-files.mjs",
+    "scripts/profile-paths.mjs",
     "cordis.patch.yml",
     "CHANGELOG.md",
     "CONTRIBUTING.md",

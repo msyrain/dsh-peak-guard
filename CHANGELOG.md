@@ -11,7 +11,31 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-暂无。/ Nothing yet.
+### 变更 / Changed
+
+- **删除无消费者的配置 schema**：`src/config.js` 的 `loadConfigSchema()` 与 `index.js`
+  里的探测调用一并删除。它的返回值没有任何读者——插件并不导出加载器约定的 `Config`，
+  所以既没有插件内消费者，也没有框架消费者——却把 `DEFAULTS` 的整张默认值表又抄了一遍，
+  正是模块注释声称要避免的那种漂移。默认值与校验从此只有 `normalizeConfig()` 一个权威，
+  非法 `config` 依旧在加载时抛错。
+- **删除未被引用的常量** `LEGACY_OFF_PEAK_WINDOW`：旧规则的表达方式是用户在自己的
+  patch 里写 `offPeakWindows: [{ start: '00:30', end: '08:30' }]`，README 一直这么教；
+  代码里的那份常量没有任何引用，模块头部的 `{@link LEGACY_WINDOW}` 还是个错名字。
+  头部注释改为说明这条规则该怎么写出来。
+- **合并重复实现**：`install.mjs` 与 `sync.mjs` 各自手抄了一份相同的 `isLink()`、
+  `INSTALL_DIR_NAME` 与 `DSH_HOME` 默认值，现统一到 `scripts/profile-paths.mjs`。
+  两个脚本必须对「插件装在哪个目录」「那里是联接还是副本」给出同一个答案。
+- **去掉冗余判断**：`readRuntimeState()` 先 `existsSync()` 再读文件，而外层 `try/catch`
+  早已把「文件不存在」归入同一种答案（从未切换过），少一次系统调用。
+- **合并重复文案**：两条拒绝路径各自拼一遍「如何立即调用」的说明与 `offPeakHint()`，
+  现由 `refusePeak()` 生成。
+
+### 修正 / Fixed
+
+- **文档里的测试数量**：README（中英）、CONTRIBUTING 与 CHANGELOG 都写「72 项」，
+  实际是 78 项，已按实际数量修正。
+
+无行为变更：78 项测试全部通过，`lib/client.js` 逐字节未变（`build:client:check` 通过）。
 
 ## [0.2.0] - 2026-09-11
 
@@ -41,7 +65,7 @@ adheres to [Semantic Versioning](https://semver.org/).
   `localAgentsOnly` / `showPrices` / `pricing` / `statePath`。
 - **文档**：`README.md`（英文）与 `README.zh.md`（中文），含峰谷规则、安装、
   全部配置项与已知限制。
-- **测试**：72 项离线、确定性测试（`tests/peak|gate|switch|client.test.js`）。
+- **测试**：78 项离线、确定性测试（`tests/peak|gate|switch|client.test.js`）。
 - **CI**：GitHub Actions 跑测试（Node 22 与 24）并校验已提交的浏览器产物是否为最新。
 
 ### 设计取舍 / Design decisions worth knowing

@@ -15,11 +15,11 @@
  * @module dsh-peak-guard
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { APPROVE_LABEL, REJECT_LABEL, loadConfigSchema, normalizeConfig } from './src/config.js'
+import { APPROVE_LABEL, REJECT_LABEL, normalizeConfig } from './src/config.js'
 import { decide, renderPrompt } from './src/peak.js'
 
 /** Package name; also the client module-table id the browser half registers under. */
@@ -78,7 +78,8 @@ const MAX_BODY_BYTES = 1024
  */
 export function readRuntimeState(path) {
   try {
-    if (!existsSync(path)) return undefined
+    // No existence pre-check: a missing file throws into the catch below,
+    // which is the same "never toggled" answer for one syscall less.
     const parsed = JSON.parse(readFileSync(path, 'utf8'))
     return typeof parsed?.enabled === 'boolean' ? parsed.enabled : undefined
   } catch {
@@ -217,11 +218,6 @@ export function apply(ctx, rawConfig = {}) {
   void import('@deepseek-ai/dsh-llm').then(
     (module) => { createUserMessage = module.createUserMessage },
     (error) => { logger?.debug?.(`dsh-peak-guard: message vocabulary unavailable: ${describe(error)}`) },
-  )
-
-  loadConfigSchema().then(
-    (schema) => { if (schema === undefined) logger?.debug?.('dsh-peak-guard: Schemastery unavailable; using built-in defaults') },
-    (error) => { logger?.warn?.(`dsh-peak-guard: config schema probe failed: ${describe(error)}`) },
   )
 
   /**
@@ -544,6 +540,23 @@ export function apply(ctx, rawConfig = {}) {
   }
 
   /**
+   * Build the refusal for a peak call the guard will not dispatch.
+   *
+   * Both refusal paths end in the same two ways out, because a wall the user
+   * cannot act on is not an answer: wait for the off-peak instant the decision
+   * names, or turn the guard off in the sidebar / adjust the config.
+   *
+   * @param {ReturnType<typeof decide>} decision - the refusing classification.
+   * @param {string} lead - one sentence saying what happened.
+   * @returns {object} the terminal error chunk to yield.
+   */
+  function refusePeak(decision, lead) {
+    return declined(
+      `${lead}${offPeakHint(decision)}如需现在调用，可在左侧边栏关闭「峰谷计费守卫」，或调整插件配置。`,
+    )
+  }
+
+  /**
    * Race a confirmation against its timeout, the request's own cancellation,
    * and the plugin lifetime.
    *
@@ -640,10 +653,7 @@ export function apply(ctx, rawConfig = {}) {
       if (remembered === 'declined') {
         // Restate the wait AND the two ways out: a refusal the user cannot act
         // on is just a wall. The window is still the same one they declined.
-        yield declined(
-          `本次调用已在当前高峰时段（${when}）被拒绝过。${offPeakHint(decision)}`
-          + '如需现在调用，可在左侧边栏关闭「峰谷计费守卫」，或调整插件配置。',
-        )
+        yield refusePeak(decision, `本次调用已在当前高峰时段（${when}）被拒绝过。`)
         return
       }
 
@@ -663,10 +673,7 @@ export function apply(ctx, rawConfig = {}) {
       if (answer.outcome === 'declined') {
         if (agent !== undefined) writeMemo(agent, call, windowKey, 'declined')
         logger?.info?.(`dsh-peak-guard: peak call to ${route} declined via ${answer.channel}`)
-        yield declined(
-          `本次调用处于高峰时段（${when}），已按你的选择中止。${offPeakHint(decision)}`
-          + '如需现在调用，可在左侧边栏关闭「峰谷计费守卫」，或调整插件配置。',
-        )
+        yield refusePeak(decision, `本次调用处于高峰时段（${when}），已按你的选择中止。`)
         return
       }
 

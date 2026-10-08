@@ -11,14 +11,17 @@
  *   09:00-12:00 and 14:00-18:00; weekends are entirely off-peak.
  * - <https://api-docs.deepseek.com/quick_start/pricing>
  *
- * The 2025-era "00:30-08:30 daily" window is retired; {@link LEGACY_WINDOW}
- * keeps it available as a documented alternative for anyone still billed under
- * it.
+ * The 2025-era "00:30-08:30 daily" rule is retired, and it is deliberately
+ * not shipped as a constant: a deployment still billed under it writes the
+ * window out in its own patch layer (`peakWindows: []` plus
+ * `offPeakWindows: [{ start: '00:30', end: '08:30' }]`, as the README shows),
+ * which the window parser already handles because an `end` before its `start`
+ * wraps past midnight.
  *
- * The same default table serves both callers: Cordis validates
- * {@link loadConfigSchema} once at load, and {@link normalizeConfig} fills the
- * same values for a bare call (a unit test, or a bundle row with no `config`).
- * One table is what stops the two from drifting.
+ * {@link normalizeConfig} is the single authority for defaults and validation:
+ * it fills every default and rejects a config this plugin cannot honor, so a
+ * malformed row fails loudly at load instead of turning the guard into a
+ * silent no-op.
  *
  * @module dsh-peak-guard/config
  */
@@ -43,13 +46,6 @@ export const DEFAULT_PEAK_WINDOWS = Object.freeze([
   Object.freeze({ start: '09:00', end: '12:00', weekdaysOnly: true, label: '上午高峰' }),
   Object.freeze({ start: '14:00', end: '18:00', weekdaysOnly: true, label: '下午高峰' }),
 ])
-
-/**
- * The retired 2025-02-26 rule: a single daily 00:30-08:30 off-peak window.
- * Kept as documentation and as a drop-in `peakWindows` / `offPeakWindows`
- * value for deployments still billed under it.
- */
-export const LEGACY_OFF_PEAK_WINDOW = Object.freeze({ start: '00:30', end: '08:30' })
 
 /**
  * Price rows per million tokens (CNY). `match` globs are tested against
@@ -260,55 +256,5 @@ function assertTimeZone(timeZone) {
     new Intl.DateTimeFormat('en-US', { timeZone }).format(new Date(0))
   } catch {
     throw new TypeError(`dsh-peak-guard: unknown timeZone ${JSON.stringify(timeZone)}`)
-  }
-}
-
-/**
- * Build the Schemastery schema for {@link DEFAULTS}.
- *
- * Loaded lazily so the plugin still works in a composition that mounts no
- * schema validator; {@link normalizeConfig} remains the authority either way.
- *
- * @returns {Promise<object | undefined>} the schema, or undefined when Schemastery is unavailable.
- */
-export async function loadConfigSchema() {
-  try {
-    const { default: Schema } = await import('@deepseek-ai/schemastery')
-    const price = Schema.object({
-      input: Schema.number(),
-      cacheHitInput: Schema.number(),
-      output: Schema.number(),
-    })
-    const window = Schema.object({
-      start: Schema.string().required(),
-      end: Schema.string().required(),
-      weekdaysOnly: Schema.boolean(),
-      label: Schema.string(),
-    })
-    return Schema.object({
-      enabled: Schema.boolean().default(true),
-      providerPatterns: Schema.array(Schema.string()).default(['deepseek-*']),
-      modelPatterns: Schema.array(Schema.string()).default(['deepseek-*']),
-      gateAuxiliary: Schema.boolean().default(false),
-      requireConfirmation: Schema.boolean().default(true),
-      peakWindows: Schema.array(window).default(DEFAULT_PEAK_WINDOWS),
-      offPeakWindows: Schema.array(window).default([]),
-      timeZone: Schema.string().default(DEFAULT_TIME_ZONE),
-      notifyOffPeak: Schema.boolean().default(false),
-      unaskableAction: Schema.union(['proceed', 'block']).default('proceed'),
-      localAgentsOnly: Schema.boolean().default(true),
-      showPrices: Schema.boolean().default(true),
-      suppressRepeatAsks: Schema.boolean().default(true),
-      askScope: Schema.union(['window', 'call']).default('window'),
-      pricing: Schema.array(Schema.object({
-        match: Schema.array(Schema.string()).required(),
-        label: Schema.string(),
-        peak: price,
-        offPeak: price,
-        discount: Schema.string(),
-      })).default(DEFAULT_PRICING),
-    })
-  } catch {
-    return undefined
   }
 }

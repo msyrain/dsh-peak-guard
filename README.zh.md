@@ -219,7 +219,7 @@ Web GUI **左侧边栏底部**会出现一行 `峰谷计费守卫`，位于「DS
 
 ## 配置
 
-在 profile 的 `cordis.patch.yml` 里覆盖 `peak-guard` 行的 `config`（**整段替换**，不是深合并，所以要么只写你要改的键并依赖 schema 默认值，要么写完整个需要的键）：
+在 profile 的 `cordis.patch.yml` 里覆盖 `peak-guard` 行的 `config`（**整段替换**，不是深合并，所以要么只写你要改的键、让插件默认值补齐其余，要么写完整个需要的键）：
 
 ```yaml
 - id: peak-guard
@@ -292,7 +292,7 @@ npm run sync:check                # 只报漂移，不写入
 
 产物是**确定性**的：构建戳由 `src/client.js` 与构建脚本的内容哈希派生，而非时间戳。同样的输入总是产出同样的字节，这也是 `build:client:check` 能成立的前提（时间戳方案下每次重建都有差异，就无法判断产物是否过期）。
 
-共 72 项，全部离线、确定性：
+共 78 项，全部离线、确定性：
 
 - `tests/peak.test.js` — 时区换算、窗口边界（含跨午夜与周末）、glob 匹配、价格选择、决策分支、配置校验。
 - `tests/gate.test.js` — 用假 Cordis 上下文驱动真实的 `llm/stream` 监听器：放行路径、审批通道、问答通道（含两种历史返回结构）、拒绝时的终止块、无通道降级、子智能体、决策记忆、信号取消、卸载排空、配置报错。
@@ -326,10 +326,11 @@ npm run sync:check                # 只报漂移，不写入
 |---|---|
 | `index.js` | Cordis 插件入口：`llm/stream` 监听器、确认通道选择、拒绝块、决策记忆、状态路由、生命周期。 |
 | `src/peak.js` | 纯函数：时区字段、窗口判定、分类、glob 匹配、价格选择、询问文案。 |
-| `src/config.js` | 默认值、严格校验、Schemastery schema。 |
+| `src/config.js` | 默认值与严格校验（`normalizeConfig()` 是唯一权威）。 |
 | `src/client.js` | 浏览器半部源码：侧边栏「设置」上方的名称 + 启用/禁用开关。 |
 | `lib/client.js` | 由 `scripts/build-client.mjs` 生成的客户端产物（受版本管理，安装即可用）。 |
 | `scripts/build-client.mjs` | 把 `src/client.js` 包成 DSH 客户端模块系统要求的 CJS 工厂产物。 |
+| `scripts/profile-paths.mjs` | `install.mjs` 与 `sync.mjs` 共用的安装目录名、`DSH_HOME` 默认值与链接判定。 |
 | `cordis.patch.yml` | 组合包层（`dsh.bundle` 指向它）。 |
 | `install.mjs` | 安装/卸载到 profile（junction 或复制）。 |
 | `sync.mjs` | 副本安装模式下，把工作区的运行文件同步到安装目录；`--check` 只报漂移。 |

@@ -337,7 +337,7 @@ identical bytes, which is the precondition for `build:client:check` meaning
 anything — under a timestamp, every rebuild would differ and no check could tell
 a stale artifact from a fresh one.
 
-72 deterministic, fully offline tests:
+78 deterministic, fully offline tests:
 
 - `tests/peak.test.js` — timezone conversion, window boundaries (including
   wraparound and weekends), glob matching, price selection, every decision

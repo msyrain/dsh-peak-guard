@@ -23,21 +23,20 @@
  */
 
 import { createHash } from 'node:crypto'
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { packageFiles } from './scripts/package-files.mjs'
+import { INSTALL_DIR_NAME, defaultDshHome, isLink } from './scripts/profile-paths.mjs'
 
 const SOURCE_DIR = dirname(fileURLToPath(import.meta.url))
-const INSTALL_DIR_NAME = 'dsh-peak-guard'
 
 /** Parse the flag surface. */
 function parseArgs(argv) {
   const options = {
     profile: 'web',
-    dshHome: process.env.DSH_HOME ?? join(homedir(), '.dsh'),
+    dshHome: defaultDshHome(),
     check: false,
   }
   for (let index = 0; index < argv.length; index += 1) {
@@ -55,19 +54,6 @@ function parseArgs(argv) {
 function hashOf(path) {
   if (!existsSync(path)) return undefined
   return createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 12)
-}
-
-/**
- * True when a path is a junction or symlink, which makes syncing unnecessary.
- * @param {string} path - the candidate.
- * @returns {boolean} whether the path is a link.
- */
-function isLink(path) {
-  try {
-    return lstatSync(path).isSymbolicLink()
-  } catch {
-    return false
-  }
 }
 
 function main() {

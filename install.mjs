@@ -30,23 +30,22 @@
  * the Chinese labels this plugin's config carries.
  */
 
-import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { packageFiles } from './scripts/package-files.mjs'
+import { INSTALL_DIR_NAME, defaultDshHome, isLink } from './scripts/profile-paths.mjs'
 
 const SOURCE_DIR = dirname(fileURLToPath(import.meta.url))
 const BEGIN_MARKER = '# >>> dsh-peak-guard (managed by install.mjs) >>>'
 const END_MARKER = '# <<< dsh-peak-guard <<<'
-const INSTALL_DIR_NAME = 'dsh-peak-guard'
 
 /** Parse the small flag surface this script needs. */
 function parseArgs(argv) {
   const options = {
     profile: 'web',
-    dshHome: process.env.DSH_HOME ?? join(homedir(), '.dsh'),
+    dshHome: defaultDshHome(),
     copy: false,
     uninstall: false,
     force: false,
@@ -128,15 +127,6 @@ function withManagedBlock(text) {
     .join('\n')
     .trimEnd()
   return `${kept}\n\n${managedBlock()}`
-}
-
-/** True when the path is a directory junction or symlink. */
-function isLink(path) {
-  try {
-    return lstatSync(path).isSymbolicLink()
-  } catch {
-    return false
-  }
 }
 
 /**

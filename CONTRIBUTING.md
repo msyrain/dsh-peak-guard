@@ -15,7 +15,7 @@ git clone https://github.com/msyrain/dsh-peak-guard.git
 cd dsh-peak-guard
 npm ci --ignore-scripts     # 零运行时依赖，这步只是校验锁文件
 
-npm test                    # 72 项离线测试，不需要网络/DSH/密钥
+npm test                    # 78 项离线测试，不需要网络/DSH/密钥
 ```
 
 要装进正在运行的 DSH 里实际看效果：
