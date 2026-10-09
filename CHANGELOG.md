@@ -11,6 +11,13 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+暂无。/ Nothing yet.
+
+## [0.3.0] - 2026-10-09
+
+`0.3.0` 是一次纯维护版本：删除死代码、合并重复实现、修正文档。
+没有新增能力，也没有行为变更。
+
 ### 变更 / Changed
 
 - **删除无消费者的配置 schema**：`src/config.js` 的 `loadConfigSchema()` 与 `index.js`
@@ -85,5 +92,6 @@ adheres to [Semantic Versioning](https://semver.org/).
   清单名就是浏览器模块表的键，不能随意改）；仓库名与 README 标题用 `deepseek-peak-guard`；
   侧边栏显示中文标签 `峰谷计费守卫`。
 
-[Unreleased]: https://github.com/msyrain/dsh-peak-guard/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/msyrain/dsh-peak-guard/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/msyrain/dsh-peak-guard/releases/tag/v0.3.0
 [0.2.0]: https://github.com/msyrain/dsh-peak-guard/releases/tag/v0.2.0

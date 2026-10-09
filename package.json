@@ -1,6 +1,6 @@
 {
   "name": "dsh-peak-guard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "DeepSeek peak/off-peak (峰谷) cost guard for DSH: confirms model calls dispatched inside DeepSeek's peak windows, with a sidebar enable/disable switch",
   "type": "module",
   "main": "index.js",
